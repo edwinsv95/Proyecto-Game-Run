@@ -66,7 +66,7 @@ databox({
 	overscanValue = 0
 })
 
----sonido
+---
 local sounds = require('librerias.sounds')
 sounds.isSoundOn = databox.isSoundOn
 sounds.isMusicOn = databox.isMusicOn

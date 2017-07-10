@@ -1,9 +1,9 @@
 -- menu de escenas 
 -- 
 
-local composer = require('composer')
-local widget = require('widget')
-local controller = require('librerias.controller')
+local composer = require('composer')--llamando a la libreia composer 
+local widget = require('widget')-- libreria de  botones
+local controller = require('librerias.controller')-- llamdo a controladores 
 local relayout = require('librerias.relayout')
 local sounds = require('librerias.sounds')
 
@@ -30,7 +30,7 @@ function scene:create()
 	group:insert(bottomGroup)
 	relayout.add(bottomGroup)
 
-	local tower = display.newImageRect(bottomGroup, 'imagenes/tower.png', 192, 256)
+	local tower = display.newImageRect(bottomGroup, 'imagenes/tower.png', 192, 256)-- torre para la animacion 
 	tower.anchorY = 1
 	tower.x, tower.y = -_W * 0.17, -64
 
@@ -123,7 +123,7 @@ end
 
 
 function scene:gotoPreviousScene()
-	native.showAlert('Corona Cannon', 'quieres seguir jugando?', {'si', 'Cancelar'}, function(event)
+	native.showAlert('GAMERUN', 'quieres terminar el juego?', {'si', 'Cancelar'}, function(event)
 		if event.action == 'clicked' and event.index == 1 then
 			native.requestExit()
 		end
