@@ -1,18 +1,17 @@
--- menu de escenas 
--- 
 
-local composer = require('composer')--llamando a la libreia composer 
-local widget = require('widget')-- libreria de  botones
-local controller = require('librerias.controller')-- llamdo a controladores 
-local relayout = require('librerias.relayout')
-local sounds = require('librerias.sounds')
 
-local scene = composer.newScene()
+local composer = require('composer')
+local widget = require('widget')
+local controller = require('libs.controller')
+local relayout = require('libs.relayout')
+local sonidos = require('libs.sonidos')
 
--- configuracion
-local newSidebar = require('classes.sidebar').newSidebar
+local esena = composer.newScene()
 
-function scene:create()
+
+local newbarra_lateral = require('classes.barra_lateral').newbarra_lateral
+
+function esena:create()
 	local _W, _H, _CX, _CY = relayout._W, relayout._H, relayout._CX, relayout._CY
 
 	local group = self.view
@@ -30,20 +29,20 @@ function scene:create()
 	group:insert(bottomGroup)
 	relayout.add(bottomGroup)
 
-	local tower = display.newImageRect(bottomGroup, 'imagenes/tower.png', 192, 256)-- torre para la animacion 
-	tower.anchorY = 1
-	tower.x, tower.y = -_W * 0.17, -64
+	local torre = display.newImageRect(bottomGroup, 'images/tower.png', 192, 256)
+	torre.anchorY = 1
+	torre.x, torre.y = -_W * 0.17, -64
 
-	local cannon = display.newImageRect(bottomGroup, 'imagenes/cannon.png', 128, 64)
+	local cannon = display.newImageRect(bottomGroup, 'images/cannon.png', 128, 64)
 	cannon.anchorX = 0.25
-	cannon.x, cannon.y = tower.x, tower.y - 256
+	cannon.x, cannon.y = torre.x, torre.y - 256
 
-	-- Rotaciopn del cañon
+	
 	transition.to(cannon, {time = 4000, rotation = -180, iterations = 0, transition = easing.continuousLoop})
 
 	local numTiles = math.ceil(_W / 64 / 2)
-	for i = -numTiles - 4, numTiles + 4 do -- Add extra 4 on the sides for resize events
-		local tile = display.newImageRect(bottomGroup, 'imagenes/green_tiles/3.png', 64, 64)
+	for i = -numTiles - 4, numTiles + 4 do 
+		local tile = display.newImageRect(bottomGroup, 'images/green_tiles/3.png', 64, 64)
 		tile.anchorY = 1
 		tile.x, tile.y = i * 64, 0
 	end
@@ -53,7 +52,7 @@ function scene:create()
 	group:insert(titleGroup)
 	relayout.add(titleGroup)
 
-	local title = 'GAMERUN *JUEGO '
+	local title = 'JUEGO GAMERUN'
 	local j = 1
 	for i = -6, 6 do
 		local character = display.newGroup()
@@ -63,7 +62,7 @@ function scene:create()
 		rect:setFillColor(0.2)
 		rect:setStrokeColor(0.8)
 
-		local text = display.newText({
+		local text = display.newText({--TIPO DE TEXTO DEL TITULO
 			parent = character,
 			text = title:sub(j, j),
 			x = 0, y = 0,
@@ -78,13 +77,13 @@ function scene:create()
 	end
 
 	self.playButton = widget.newButton({
-		defaultFile = 'imagenes/buttons/play2.png',
-		overFile = 'imagenes/buttons/play-over.png',
+		defaultFile = 'images/buttons/play.png',
+		overFile = 'images/buttons/play-over.png',
 		width = 380, height = 200,
 		x = 400 - 190, y = -200 - 100,
 		onRelease = function()
-			sounds.play('tap')
-			composer.gotoScene('escenes.level_select', {time = 500, effect = 'slideLeft'})
+			sonidos.play('tap')
+			composer.gotoScene('esenas.seleccionar_nivel', {time = 500, effect = 'slideLeft'})
 		end
 	})
 	group:insert(self.playButton)
@@ -95,18 +94,18 @@ function scene:create()
 		end})
 	end})
 
-	local sidebar = newSidebar({g = group, onHide = function()
+	local barra_lateral = newbarra_lateral({g = group, onHide = function()
 		self:setVisualButtons()
 	end})
 
 	self.settingsButton = widget.newButton({
-		defaultFile = 'imagenes/buttons/settings.png',
-		overFile = 'imagenes/buttons/settings-over.png',
+		defaultFile = 'images/buttons/settings.png',
+		overFile = 'images/buttons/settings-over.png',
 		width = 96, height = 105,
 		x = 64 + 48, y = _H - 32 - 52,
 		onRelease = function()
-			sounds.play('tap')
-			sidebar:show()
+			sonidos.play('tap')
+			barra_lateral:show()
 		end
 	})
 	self.settingsButton.isRound = true
@@ -114,39 +113,38 @@ function scene:create()
 	relayout.add(self.settingsButton)
 
 	self:setVisualButtons()
-	sounds.playStream('menu_music')
+	sonidos.playStream('menu_music')
 end
 
-function scene:setVisualButtons()
+function esena:setVisualButtons()
 	controller.setVisualButtons({self.playButton, self.settingsButton})
 end
 
-
-function scene:gotoPreviousScene()
-	native.showAlert('GAMERUN', 'quieres terminar el juego?', {'si', 'Cancelar'}, function(event)
+-- Para Android's 
+function esena:gotoPreviousScene()
+	native.showAlert('Game Run', 'seguro quieres salir del juego?', {'Si', 'Cancelar'}, function(event)
 		if event.action == 'clicked' and event.index == 1 then
 			native.requestExit()
 		end
 	end)
 end
 
-function scene:show(event)
+function esena:show(event)
 	if event.phase == 'did' then
 		
 		system.activate('controllerUserInteraction')
 	end
 end
 
-function scene:hide(event)
+function esena:hide(event)
 	if event.phase == 'will' then
 		
 		system.deactivate('controllerUserInteraction')
 	end
 end
------------------------------------------------------------
 
-scene:addEventListener('create')
-scene:addEventListener('show')
-scene:addEventListener('hide')
+esena:addEventListener('create')
+esena:addEventListener('show')
+esena:addEventListener('hide')
 
-return scene
+return esena

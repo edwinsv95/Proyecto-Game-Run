@@ -3,31 +3,32 @@
 local composer = require('composer') 
 local physics = require('physics') 
 local widget = require('widget') 
---local controller = require('libs.controller') -- 
-local databox = require('librerias.databox') -- 
---local eachframe = require('libs.eachframe') 
---local relayout = require('libs.relayout') 
-local sounds = require('librerias.sounds') 
---local tiled = require('libs.tiled') 
+local controller = require('libs.controller') 
+local databox = require('libs.databox') 
+local eachframe = require('libs.eachframe') 
+local relayout = require('libs.relayout') 
+local sonidos = require('libs.sonidos') 
+local tiled = require('libs.tiled') 
 
 physics.start()
 physics.setGravity(0, 20) 
 
-local scene = composer.newScene()
+local esena = composer.newScene()
 
 
-local newCannon = require('clases.cannon').newCannon 
-local newBug = require('clases.bug').newBug 
-local newBlock = require('clases.block').newBlock 
-local newSidebar = require('clases.sidebar').newSidebar 
-local newEndLevelPopup = require('clases.end_level_popup').newEndLevelPopup 
 
-function scene:create(event)
+local newCannon = require('classes.cannon').newCannon 
+local newBug = require('classes.bug').newBug 
+local newBloque = require('classes.bloque').newBloque 
+local newbarra_lateral = require('classes.barra_lateral').newbarra_lateral 
+local newEndLevelPopup = require('classes.finalizar_nivel').newEndLevelPopup 
+
+function esena:create(event)
 	local _W, _H, _CX, _CY = relayout._W, relayout._H, relayout._CX, relayout._CY
 
 	local group = self.view
 	self.levelId = event.params
-	self.level = require('levels.' .. self.levelId)
+	self.level = require('niveles.' .. self.levelId)
 	local background = display.newRect(group, _CX, _CY, _W,  _H)
 	background.fill = {
 	    type = 'gradient',
@@ -36,8 +37,8 @@ function scene:create(event)
 	}
 	relayout.add(background)
 
-	
-	self.map = tiled.newTiledMap({g = group, filename = 'maps.' .. self.level.map})
+
+	self.map = tiled.newTiledMap({g = group, filename = 'mapas.' .. self.level.map})
 	self.map.camera.low.y = -self.map.map.height * self.map.map.tileheight 
 	self.map.camera.high.y = self.map.camera.high.y
 	self.map:moveCamera(self.map.camera.high.x, 0) 
@@ -50,10 +51,10 @@ function scene:create(event)
 		table.insert(self.bugs, newBug({g = self.map.physicsGroup, x = b.x, y = b.y}))
 	end
 
-	self.blocks = {}
-	for i = 1, #self.level.blocks do
-		local b = self.level.blocks[i]
-		table.insert(self.blocks, newBlock({
+	self.bloques = {}
+	for i = 1, #self.level.bloques do
+		local b = self.level.bloques[i]
+		table.insert(self.bloques, newBloque({
 			g = self.map.physicsGroup,
 			x = b.x, y = b.y,
 			rotation = b.rotation,
@@ -62,7 +63,7 @@ function scene:create(event)
 		}))
 	end
 
-
+	
 	self:createTouchRect({delay = 2000})
 	self.map.physicsGroup:toFront() 
 	self.cannon = newCannon({map = self.map, level = self.level})
@@ -70,42 +71,42 @@ function scene:create(event)
 
 	
 	self.endLevelPopup = newEndLevelPopup({g = group, levelId = self.levelId})
-	self.sidebar = newSidebar({g = group, levelId = self.levelId, onHide = function()
+	self.barra_lateral = newbarra_lateral({g = group, levelId = self.levelId, onHide = function()
 		self:setIsPaused(false)
 		controller.setVisualButtons()
 	end})
 
-	local levelLabel = display.newText({
+	local etiqueta_nivel = display.newText({
 		parent = group,
-		text = 'Level: ' .. self.levelId,
+		text = 'Nivel: ' .. self.levelId,-- CONTADOR DE NIVELES
 		x = _W - 16, y = 16,
 		font = native.systemFontBold,
 		fontSize = 32
 	})
-	levelLabel.anchorX, levelLabel.anchorY = 1, 0
-	relayout.add(levelLabel)
+	etiqueta_nivel.anchorX, etiqueta_nivel.anchorY = 1, 0
+	relayout.add(etiqueta_nivel)
 
-	local pauseButton = widget.newButton({
-		defaultFile = 'imagenes/buttons/pause.png',
-		overFile = 'imagenes/buttons/pause-over.png',
+	local boton_pausar = widget.newButton({
+		defaultFile = 'images/buttons/pause.png',--boton pausar
+		overFile = 'images/buttons/pause-over.png',
 		width = 96, height = 105,
 		x = 16, y = 16,
 		onRelease = function()
-			sounds.play('tap')
-			self.sidebar:show()
+			sonidos.play('tap')
+			self.barra_lateral:show()
 			self:setIsPaused(true)
 		end
 	})
-	pauseButton.anchorX, pauseButton.anchorY = 0, 0
-	group:insert(pauseButton)
-	relayout.add(pauseButton)
+	boton_pausar.anchorX, boton_pausar.anchorY = 0, 0
+	group:insert(boton_pausar)
+	relayout.add(boton_pausar)
 
-	self.sidebar:toFront()
+	self.barra_lateral:toFront()
 
 	controller.setVisualButtons() 
 
 	local function switchMotionAndRotation()
-		
+	
 		controller.onMotion, controller.onRotation = controller.onRotation, controller.onMotion
 	end
 
@@ -123,7 +124,7 @@ function scene:create(event)
 	
 	controller.onRotation = function(name, value)
 		if not self.isPaused then
-			if self.cannon.ball and not self.cannon.ball.isLaunched then
+			if self.cannon.bomba and not self.cannon.bomba.isLaunched then
 				self.map:snapCameraTo(self.cannon)
 			end
 			if math.abs(value) >= 0.08 or math.abs(value) < 0.02 then
@@ -145,7 +146,7 @@ function scene:create(event)
 					self.cannon:engageForce()
 				end
 			elseif keyType == 'pause' then
-				pauseButton._view._onRelease()
+				boton_pausar._view._onRelease()
 			end
 		end
 	end
@@ -156,7 +157,7 @@ function scene:create(event)
 	end
 end
 
-function scene:show(event)
+function esena:show(event)
 	if event.phase == 'did' then
 		eachframe.add(self) 
 
@@ -168,18 +169,18 @@ function scene:show(event)
 		
 		if not databox.isHelpShown then
 			timer.performWithDelay(2500, function()
-				self.sidebar:show()
+				self.barra_lateral:show()
 				self:setIsPaused(true)
 			end)
 		end
 
-		sounds.playStream('game_music')
+		sonidos.playStream('game_music')
 	end
 end
 
 
-function scene:eachFrame()
-	local tables = {self.bugs, self.blocks}
+function esena:eachFrame()
+	local tables = {self.bugs, self.bloques}
 	for i = 1, #tables do
 		local t = tables[i]
 		for j = #t, 1, -1 do
@@ -195,26 +196,28 @@ function scene:eachFrame()
 	end
 end
 
-function scene:setIsPaused(isPaused)
+function esena:setIsPaused(isPaused)
 	self.isPaused = isPaused
 	self.cannon.isPaused = self.isPaused 
 	if self.isPaused then
 		physics.pause()
 	else
-		physics.start()--llmando a la libreria fisica de corona
+		physics.start()
 	end
+end
 
-function scene:endLevelCheck()
+
+function esena:endLevelCheck()
 	if not self.isPaused then
 		if #self.bugs == 0 then
-			sounds.play('win')
+			sonidos.play('win')
 			self:setIsPaused(true)
 			self.endLevelPopup:show({isWin = true})
 			timer.cancel(self.endLevelCheckTimer)
 			self.endLevelCheckTimer = nil
-			databox['level' .. self.levelId] = true 
+			databox['level' .. self.levelId] = true
 		elseif self.cannon:getAmmoCount() == 0 then
-			sounds.play('lose')
+			sonidos.play('lose')
 			self:setIsPaused(true)
 			self.endLevelPopup:show({isWin = false})
 			timer.cancel(self.endLevelCheckTimer)
@@ -224,7 +227,7 @@ function scene:endLevelCheck()
 end
 
 
-function scene:createTouchRect(params)
+function esena:createTouchRect(params)
 	local _W, _H, _CX, _CY = relayout._W, relayout._H, relayout._CX, relayout._CY
 
 	local group = self.view
@@ -258,16 +261,16 @@ function scene:createTouchRect(params)
 end
 
 
-function scene:gotoPreviousScene()
-	native.showAlert('Corona Cannon', 'estas seguro que no existe este nivel?', {'si', 'Cancelar'}, function(event)
+function esena:gotoPreviousScene()
+	native.showAlert('Game Run', 'Estas seguro que quieres salir de este nivel?', {'Si', 'Cancelar'}, function(event)
 		if event.action == 'clicked' and event.index == 1 then
-			composer.gotoScene('escena.menu', {time = 500, effect = 'slideRight'})
+			composer.gotoScene('esenas.menu', {time = 500, effect = 'slideRight'})
 		end
 	end)
 end
 
 
-function escena:hide(event)
+function esena:hide(event)
 	if event.phase == 'will' then
 		eachframe.remove(self)
 		controller.onMotion = nil
@@ -281,8 +284,8 @@ function escena:hide(event)
 	end
 end
 
-escena:addEventListener('create')
-escena:addEventListener('show')
-escena:addEventListener('hide')
+esena:addEventListener('create')
+esena:addEventListener('show')
+esena:addEventListener('hide')
 
-return escena
+return esena
