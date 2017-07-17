@@ -1,5 +1,3 @@
-
---  dibujando objetos y rectagulos para impacto del cañon-
 return {
 	map = 1,
 	cannon = {mapX = 4, mapY = 5},
@@ -7,7 +5,7 @@ return {
 	bugs = {
 		{x = 1289, y = 358}
 	},
-	blocks = {
+	bloques = {
 		{material = 'wood', name = 'rectangle5', x = 1230, y = 328, rotation = 0},
 		{material = 'wood', name = 'rectangle5', x = 1343, y = 328, rotation = 0},
 		{material = 'wood', name = 'rectangle4', x = 1287, y = 255, rotation = 0},

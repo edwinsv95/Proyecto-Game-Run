@@ -1,14 +1,12 @@
--- nivel 2
-
 return {
 	map = 1,
-	cannon = {mapX = 4.5, mapY = 5.2},
+	cannon = {mapX = 4, mapY = 5},
 	ammo = {'normal', 'normal'},
 	bugs = {
 		{x = 1289, y = 358},
 		{x = 1286, y = 212}
-	},-- dibujando obstaculos
-	blocks = {
+	},
+	bloques = {
 		{material = 'wood', name = 'rectangle5', x = 1229, y = 328, rotation = 0},
 		{material = 'wood', name = 'rectangle5', x = 1342, y = 328, rotation = 0},
 		{material = 'wood', name = 'rectangle4', x = 1286, y = 255, rotation = 0},
