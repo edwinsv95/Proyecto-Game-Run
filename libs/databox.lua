@@ -1,8 +1,9 @@
 
+
 local json = require('json')
 local iCloud
 
-local data = {}
+local dato = {}
 local defaultData = {}
 
 local path = system.pathForFile('databox.json', system.DocumentsDirectory)
@@ -14,68 +15,66 @@ if isiOS or istvOS or isOSX then
     iCloud = require('plugin.iCloud')
 end
 
--- Copy tables by value
--- Nested tables are not supported, because iCloud
+
 local function shallowcopy(t)
-    local copy = {}
+    local copiar = {}
     for k, v in pairs(t) do
         if type(k) == 'string' then
             if type(v) == 'number' or type(v) == 'string' or type(v) == 'boolean' then
-                copy[k] = v
+                copiar[k] = v
             else
                 print('databox: Values of type "' .. type(v) .. '" are not supported.')
             end
         end
     end
-    return copy
+    return copiar
 end
 
--- When saving, upload to iCloud and save to disk
+
 local function saveData()
     if iCloud then
-        iCloud.set('databox', data)
+        iCloud.set('databox', dato)
     end
     if not istvOS then
         local file = io.open(path, 'w')
         if file then
-            file:write(json.encode(data))
+            file:write(json.encode(dato))
             io.close(file)
         end
     end
 end
 
--- When loading, try iCloud first and only then attempt reading from disk
--- If no file or no iCloud data - load defaults
+
 local function loadData()
     local iCloudData
     if iCloud then
         iCloudData = iCloud.get('databox')
     end
     if iCloudData then
-        data = iCloudData
+        dato = iCloudData
     else
         if istvOS then
-            data = shallowcopy(defaultData)
+            dato = shallowcopy(defaultData)
             saveData()
         else
             local file = io.open(path, 'r')
             if file then
-                data = json.decode(file:read('*a'))
+              dato = json.decode(file:read('*a'))
                 io.close(file)
             else
-                data = shallowcopy(defaultData)
+               dato= shallowcopy(defaultData)
                 saveData()
             end
         end
     end
 end
 
--- If you update your app and set new defaults, check if an old file has all the keys
+
 local function patchIfNewDefaultData()
     local isPatched = false
     for k, v in pairs(defaultData) do
-        if data[k] == nil then
-            data[k] = v
+        if dato[k] == nil then
+            dato[k] = v
             isPatched = true
         end
     end
@@ -84,16 +83,16 @@ local function patchIfNewDefaultData()
     end
 end
 
--- Metatables action!
+
 local mt = {
-    __index = function(t, k) -- On indexing, just return a field from the data table
-        return data[k]
+    __index = function(t, k) 
+        return dato[k]
     end,
-    __newindex = function(t, k, value) -- On setting an index, save the data table automatically
-        data[k] = value
+    __newindex = function(t, k, value) 
+        dato[k] = value
         saveData()
     end,
-    __call = function(t, value) -- On calling, initiate with defaults
+    __call = function(t, value) 
         if type(value) == 'table' then
             defaultData = shallowcopy(value)
         end

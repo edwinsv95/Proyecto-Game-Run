@@ -1,4 +1,4 @@
-local eachframe = require('librerias.eachframe')
+local eachframe = require('libs.eachframe')
 
 local _M = {}
 
@@ -21,8 +21,8 @@ _M.keys = {
     up = {type = 'motion', name = 'y', dir = -1},
     down = {type = 'motion', name = 'y', dir = 1},
     button1 = {type = 'action'},
-    buttonA = {type = 'action'}, -- Switch map movement/cannon control on Apple TV remote by pressing the touchpad
-    buttonX = {type = 'action'}, -- Apple TV, play/pause button to fire the cannnon
+    buttonA = {type = 'action'}, 
+    buttonX = {type = 'action'}, 
     space = {type = 'action'},
     enter = {type = 'action'},
     numPadEnter = {type = 'action'},
@@ -30,42 +30,42 @@ _M.keys = {
     button2 = {type = 'pause'},
     button9 = {type = 'pause'},
     buttonB = {type = 'pause'},
-    menu = {type = 'pause'} -- Apple TV, menu button to show pause screen
+    menu = {type = 'pause'} 
 }
 
--- Navigate to on-screen buttons
+
 function _M.selectNextVisualButton(axis, dir)
     local self = _M
     local x, y, a = self.activeVisualButton.x, self.activeVisualButton.y, self.activeVisualButton[axis]
-    -- All buttons are sorted and one is choosed by looking at their coordinates and movement from the controller
-    local sort = {}
+   
+    local ordenar = {}
     for i = 1, #self.visualButtons do
         local b = self.visualButtons[i]
         if b.isVisible and ((dir == 1 and b[axis] > a) or (dir == -1 and b[axis] < a)) then
-            local distance = math.sqrt((b.x - x) ^ 2 + (b.y - y) ^ 2)
-            local axisDistance = math.abs(b[axis] - a)
-            table.insert(sort, {button = b, distance = distance, axisDistance = axisDistance, index = i})
+            local distancia = math.sqrt((b.x - x) ^ 2 + (b.y - y) ^ 2)
+            local axisdistancia = math.abs(b[axis] - a)
+            table.insert(ordenar, {button = b, distancia = distancia, axisdistancia = axisdistancia, index = i})
         end
     end
-    if #sort > 0 then
-        table.sort(sort, function(e1, e2)
-            return e1.axisDistance < e2.axisDistance
+    if #ordenar > 0 then
+        table.sort(ordenar, function(e1, e2)
+            return e1.axisdistancia < e2.axisdistancia
         end)
-        local axisDistance = sort[1].axisDistance
-        for i = #sort, 1, -1 do
-            local b = sort[i]
-            if b.axisDistance > axisDistance then
-                table.remove(sort, i)
+        local axisdistancia = ordenar[1].axisdistancia
+        for i = #ordenar, 1, -1 do
+            local b = ordenar[i]
+            if b.axisdistancia > axisdistancia then
+                table.remove(ordenar, i)
             end
         end
-        table.sort(sort, function(e1, e2)
-            return e1.distance < e2.distance
+        table.sort(ordenar, function(e1, e2)
+            return e1.distancia < e2.distancia
         end)
-        self.selectVisualButton(sort[1].index)
+        self.selectVisualButton(ordenar[1].index)
     end
 end
 
--- Motion is the left stick / D-pad
+
 function _M.processMotion(name, value)
     local self = _M
     if #self.visualButtons > 0 then
@@ -78,7 +78,7 @@ function _M.processMotion(name, value)
     end
 end
 
--- Rotation is the right stick
+
 function _M.processRotation(name, value)
     local self = _M
     if self.onRotation then
@@ -86,7 +86,7 @@ function _M.processRotation(name, value)
     end
 end
 
--- Apply a visual effect for the selected on-screen button
+
 function _M.setSelectionEffect(button, isSelected)
     local self = _M
     if not button then
@@ -143,17 +143,17 @@ function _M.deselectVisualButton()
     self.activeVisualButton = nil
 end
 
--- Return true if there is an active controller
+
 function _M.isActive()
     local self = _M
     return self.activeDevice ~= nil
 end
 
--- If some controller sends some data, make it active and select an on-screen button
+
 function _M.checkActiveDevice(device)
     local self = _M
     if device and not self.activeDevice and (
-            device.type == 'keyboard' or -- Allow only these devices to be used with the game
+            device.type == 'keyboard' or 
             device.type == 'joystick' or
             device.type == 'gamepad' or
             device.type == 'directionalPad'
@@ -175,7 +175,7 @@ function _M.getInputDevices()
     self.devices = system.getInputDevices()
 end
 
--- Check if the currently active controller is disconnected
+
 function _M:inputDeviceStatus(event)
     if event.device and event.device == self.activeDevice and event.device.connectionState == 'disconnected' then
         self.activeDevice = nil
@@ -183,7 +183,7 @@ function _M:inputDeviceStatus(event)
     end
 end
 
--- Sticks and D-pad
+
 function _M:axis(event)
     local a = self.axes[event.axis.type]
     self.checkActiveDevice(event.device)
@@ -198,7 +198,7 @@ function _M:axis(event)
     end
 end
 
--- Controller buttons and keyboard buttons
+
 function _M:key(event)
     if event.device and not self.activeDevice then
         self.activeDevice = event.device
@@ -232,7 +232,7 @@ function _M:key(event)
     end
 end
 
--- Tell the library what on-screen buttons are currently available for navigation with a controller
+
 function _M.setVisualButtons(buttons)
     local self = _M
     self.deselectVisualButton()
@@ -253,15 +253,15 @@ function _M.activate()
     Runtime:addEventListener('axis', self)
     Runtime:addEventListener('key', self)
 
-    local delay = 1
+    local retrasar = 1
     if system.getInfo('platformName') == 'tvOS' then
-        delay = 500 -- Need to wait a little on tvOS for some reason
-        self.keys.left = nil -- Disable swipe events on Apple TV remote
+       retrasar = 500
+        self.keys.left = nil 
         self.keys.right = nil
         self.keys.up = nil
         self.keys.down = nil
     end
-    timer.performWithDelay(delay, function()
+    timer.performWithDelay(retrasar, function()
         self.getInputDevices()
     end)
 end

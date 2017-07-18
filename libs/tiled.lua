@@ -1,19 +1,17 @@
--- Tiled maps loading library
--- This library has basic, but sufficent support of Tiled lua format.
--- Adjust it according to your usage of Tiled, for example extra layer properties.
+
 
 local physics = require('physics')
 local bit = require('plugin.bit')
 
-local eachframe = require('librerias.eachframe')
-local relayout = require('librerias.relayout')
+local eachframe = require('libs.eachframe')
+local relayout = require('libs.relayout')
 
 local FlippedHorizontallyFlag   = 0x80000000
 local FlippedVerticallyFlag     = 0x40000000
 local FlippedGiagonallyFlag     = 0x20000000
 local ClearFlag                 = 0x1FFFFFFF
 
--- Break full path string into path and filename
+
 local function extractPath(p)
     local c
     for i = p:len(), 1, -1 do
@@ -24,7 +22,7 @@ local function extractPath(p)
     end
 end
 
--- Keep a value in boundaries
+
 local function clamp(value, low, high)
     if value < low then value = low
     elseif high and value > high then value = high end
@@ -34,13 +32,13 @@ end
 local function load(self, params)
     local _W, _H = relayout._W, relayout._H
 
-    self.map = require(params.filename) -- Actual Tiled data
-    package.loaded[params.filename] = nil -- Remove from memory in case it's updated during runtime
+    self.map = require(params.filename) 
+    package.loaded[params.filename] = nil 
     self.specs = params.specs or {}
 
     self:prepareTilesets()
 
-    self.snapshot = display.newSnapshot(params.g, _W, _H) -- All tiles go into this snapshot
+    self.snapshot = display.newSnapshot(params.g, _W, _H) 
     self.snapshot.x, self.snapshot.y = 0, 0
     self.group = self.snapshot.group
     self.snapshot.anchorX, self.snapshot.anchorY = 0, 0
@@ -54,13 +52,13 @@ local function load(self, params)
     end
     relayout.add(self.snapshot)
 
-    self.layers = {} -- Each Tiled layer has it's own group and they are stored here
+    self.layers = {} 
 
-    self.physicsGroup = display.newGroup() -- A separate group for physics objects
+    self.physicsGroup = display.newGroup() 
     params.g:insert(self.physicsGroup)
     self.physicsGroup.x, self.physicsGroup.y = self.snapshot.x, self.snapshot.y
 
-    -- A set of properties for the camera
+    
     self.camera = {
         x = 0, y = 0,
         xIncrement = 0, yIncrement = 0,
@@ -68,7 +66,7 @@ local function load(self, params)
         high = {x = self.map.tilewidth * self.map.width - _W, y = self.map.tilewidth * self.map.height - _H}
     }
 
-    -- Tiled provides a background color
+    
     local color = self.map.backgroundcolor
     self.map.backgroundcolor = {color[1] / 255, color[2] / 255, color[3] / 255}
 
@@ -80,7 +78,7 @@ local function load(self, params)
     self.snapshot:addEventListener('finalize')
 end
 
--- Load all spritesheers into memory
+
 local function prepareTilesets(self)
     self.tilesets = {}
     self.tileProperties = {}
@@ -166,13 +164,13 @@ local function newTile(self, params)
     return tile
 end
 
--- Objects are rectangles and other polygons from Tiled
+
 local function newObject(self, params)
     if params.shape == 'rectangle' then
-        local rect = display.newRect(params.g, params.x, params.y, params.width, params.height)
-        rect.anchorX, rect.anchorY = 0, 0
-        rect.isVisible = false
-        physics.addBody(rect, 'static', {density = 1, friction = 0.5, bounce = 0})
+        local recta = display.newRect(params.g, params.x, params.y, params.width, params.height)
+        recta.anchorX, recta.anchorY = 0, 0
+        recta.isVisible = false
+        physics.addBody(recta, 'static', {density = 1, friction = 0.5, bounce = 0})
     elseif params.shape == 'polygon' then
         local vertices = {}
         for i = 1, #params.polygon do
@@ -186,7 +184,7 @@ local function newObject(self, params)
     end
 end
 
--- Iterate each Tiled layer and create all tiles and objects
+
 local function draw(self)
     local map = self.map
     local w, h = map.width, map.height
@@ -263,7 +261,7 @@ local function snapCameraTo(self, object)
 end
 
 local function eachFrame(self)
-    -- Modify camera position
+    
     local _W, _H, _CX, _CY = relayout._W, relayout._H, relayout._CX, relayout._CY
     local step = 30
     local damping = 0.98
@@ -279,7 +277,7 @@ local function eachFrame(self)
         self:moveCamera(self.camera.x + self.camera.xIncrement * step, self.camera.y + self.camera.yIncrement * step)
     elseif self.camera.snappedObject then
         if self.camera.snappedObject.x then
-            local w, h = _W * 0.33 / 2, _H * 0.33 / 2 -- Object tracking window
+            local w, h = _W * 0.33 / 2, _H * 0.33 / 2 
             local oX, oY = self.camera.snappedObject.x, self.camera.snappedObject.y
             local x, y = self.camera.x + _CX, self.camera.y + _CY
             x = clamp(x, oX - w, oX + w)
@@ -290,7 +288,7 @@ local function eachFrame(self)
         end
     end
 
-    -- Adjust layers positions according to the camera
+   
     self.group.x, self.group.y = -self.camera.x - _CX, -self.camera.y - _CY
     self.physicsGroup.x, self.physicsGroup.y = -self.camera.x, -self.camera.y
     for i = 1, #self.layers do
