@@ -6,22 +6,22 @@ if system.getInfo('build') >= '2015.2741' then
 	display.setDefault('isAnchorClamped', false) 
 end
 
-local platform = system.getInfo('platformName')
-if platform == 'tvOS' then
+local plataforma = system.getInfo('platformName')
+if plataforma== 'tvOS' then
 	system.setIdleTimer(false)
 end
 
 
-if platform == 'Android' then
+if plataforma == 'Android' then
 	native.setProperty('androidSystemUiVisibility', 'immersiveSticky')
 end
 
 
-if platform == 'Mac OS X' or platform == 'Win' then
+if plataforma == 'Mac OS X' or plataforma == 'Win' then
 	Runtime:addEventListener('key', function(event)
 		if event.phase == 'down' and (
-				(platform == 'Mac OS X' and event.keyName == 'f' and event.isCommandDown and event.isCtrlDown) or
-					(platform == 'Win' and (event.keyName == 'f11' or (event.keyName == 'enter' and event.isAltDown)))
+				(plataforma == 'Mac OS X' and event.keyName == 'f' and event.isCommandDown and event.isCtrlDown) or
+					(plataforma == 'Win' and (event.keyName == 'f11' or (event.keyName == 'enter' and event.isAltDown)))
 			) then
 			if native.getProperty('windowMode') == 'fullscreen' then
 				native.setProperty('windowMode', 'normal')
@@ -34,19 +34,19 @@ end
 
 local composer = require('composer')
 composer.recycleOnSceneChange = true 
-composer.setVariable('levelCount', 10) --contador de niveles 
+composer.setVariable('levelCount', 10) 
 
 
 if platform == 'Android' or platform == 'WinPhone' then
 	Runtime:addEventListener('key', function(event)
 		if event.phase == 'down' and event.keyName == 'back' then
-			local scene = composer.getScene(composer.getSceneName('current'))
-            if scene then
-				if type(scene.gotoPreviousScene) == 'function' then
-                	scene:gotoPreviousScene()
+			local esena = composer.getScene(composer.getSceneName('current'))
+            if esena then
+				if type(esena.gotoPreviousScene) == 'function' then
+                	esena:gotoPreviousScene()
                 	return true
-				elseif type(scene.gotoPreviousScene) == 'string' then
-					composer.gotoScene(scene.gotoPreviousScene, {time = 500, effect = 'slideRight'})
+				elseif type(esena.gotoPreviousScene) == 'string' then
+					composer.gotoScene(esena.gotoPreviousScene, {time = 500, effect = 'slideRight'})
 					return true
 				end
             end
@@ -54,11 +54,9 @@ if platform == 'Android' or platform == 'WinPhone' then
 	end)
 end
 
+require('libs.controller') 
 
-require('librerias.controller') 
-
-
-local databox = require('librerias.databox')
+local databox = require('libs.databox')
 databox({
 	isSoundOn = true,
 	isMusicOn = true,
@@ -66,17 +64,16 @@ databox({
 	overscanValue = 0
 })
 
----
-local sounds = require('librerias.sounds')
-sounds.isSoundOn = databox.isSoundOn
-sounds.isMusicOn = databox.isMusicOn
+
+local sonidos = require('libs.sonidos')
+sonidos.isSoundOn = databox.isSoundOn
+sonidos.isMusicOn = databox.isMusicOn
+
+require('libs.relayout')
 
 
-require('librerias.relayout')
-
-
-local overscan = require('librerias.overscan')
+local overscan = require('libs.overscan')
 overscan.compensate(databox.overscanValue)
 
 
-composer.gotoScene('escenas.menu')--llamando a la clase es
+composer.gotoScene('esenas.menu')
